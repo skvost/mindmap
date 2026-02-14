@@ -81,14 +81,15 @@ export function Canvas() {
     }
 
     // Leaf steps = steps with no outgoing deps (final steps before goal)
+    // Edge goes goal(bottom) → step(top) for clean downward routing
     const connectors: Edge[] = [];
     for (const step of stepNodes) {
       if (hasOutgoing.has(step.id)) continue;
       const goalId = (step.data as StepNodeData).goalId;
       connectors.push({
-        id: `connector-${step.id}-${goalId}`,
-        source: step.id,
-        target: goalId,
+        id: `connector-${goalId}-${step.id}`,
+        source: goalId,
+        target: step.id,
         type: "smoothstep",
         style: { stroke: "var(--color-muted-foreground)", strokeWidth: 1.5, strokeDasharray: "6 3" },
         animated: false,
