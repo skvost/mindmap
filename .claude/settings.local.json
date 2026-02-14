@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(bd sync:*)",
+      "Bash(git push:*)",
+      "Bash(bd ready:*)",
+      "Bash(bd list:*)",
+      "Bash(bd stats:*)",
+      "Bash(bd create:*)",
+      "Bash(bd dep add:*)",
+      "Bash(bd show:*)",
+      "Bash(bd update:*)",
+      "Bash(bd dep remove:*)",
+      "Bash(npx next build:*)",
+      "Bash(bd close:*)"
+    ]
+  }
+}

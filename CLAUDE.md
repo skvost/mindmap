@@ -4,12 +4,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-Mindmap — a visual mind-mapping application.
+TaskFlow — a visual goal-tracking app where tasks are DAGs on an infinite canvas.
 
 ## Tech Stack
 
-- **Frontend:** React + TypeScript
-- **Styling:** Tailwind CSS + shadcn/ui
+- **Framework:** Next.js 16 (App Router) + React + TypeScript
+- **Styling:** Tailwind CSS v4 + shadcn/ui
+- **Canvas:** @xyflow/react (single instance, custom node types)
+- **State:** Zustand + @xyflow hooks
 - **Backend:** Supabase (Postgres, Auth, Storage, Realtime, Edge Functions)
 - **Task tracking:** Beads (`bd` CLI)
 
