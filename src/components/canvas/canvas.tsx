@@ -8,6 +8,7 @@ import {
   MiniMap,
   useOnSelectionChange,
   useReactFlow,
+  type Edge,
   type OnNodesChange,
   type OnEdgesChange,
   type OnConnect,
@@ -68,12 +69,41 @@ export function Canvas() {
     return ids;
   }, [nodes, collapsedGoalIds]);
 
+  // Auto-generate connector edges from leaf steps to their goal
+  const connectorEdges = useMemo(() => {
+    const stepNodes = nodes.filter((n) => n.type === "step");
+    if (stepNodes.length === 0) return [];
+
+    // Find steps that have outgoing dependency edges (they feed into other steps)
+    const hasOutgoing = new Set<string>();
+    for (const e of edges) {
+      if (e.type === "dependency") hasOutgoing.add(e.source);
+    }
+
+    // Leaf steps = steps with no outgoing deps (final steps before goal)
+    const connectors: Edge[] = [];
+    for (const step of stepNodes) {
+      if (hasOutgoing.has(step.id)) continue;
+      const goalId = (step.data as StepNodeData).goalId;
+      connectors.push({
+        id: `connector-${step.id}-${goalId}`,
+        source: step.id,
+        target: goalId,
+        type: "smoothstep",
+        style: { stroke: "var(--color-muted-foreground)", strokeWidth: 1.5, strokeDasharray: "6 3" },
+        animated: false,
+      });
+    }
+    return connectors;
+  }, [nodes, edges]);
+
   const visibleEdges = useMemo(() => {
-    if (hiddenStepIds.size === 0) return edges;
-    return edges.filter(
+    const allEdges = [...edges, ...connectorEdges];
+    if (hiddenStepIds.size === 0) return allEdges;
+    return allEdges.filter(
       (e) => !hiddenStepIds.has(e.source) && !hiddenStepIds.has(e.target),
     );
-  }, [edges, hiddenStepIds]);
+  }, [edges, connectorEdges, hiddenStepIds]);
 
   const onNodesChange: OnNodesChange = useCallback(
     (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
@@ -135,24 +165,6 @@ export function Canvas() {
       zoomOnDoubleClick={false}
       selectNodesOnDrag={false}
     >
-      <svg>
-        <defs>
-          <marker
-            id="dependency-arrow"
-            viewBox="0 0 10 10"
-            refX="10"
-            refY="5"
-            markerWidth="6"
-            markerHeight="6"
-            orient="auto-start-reverse"
-          >
-            <path
-              d="M 0 0 L 10 5 L 0 10 z"
-              fill="hsl(var(--muted-foreground))"
-            />
-          </marker>
-        </defs>
-      </svg>
       <Background variant={BackgroundVariant.Dots} gap={20} size={1} />
       <Controls showInteractive={false} />
       <MiniMap

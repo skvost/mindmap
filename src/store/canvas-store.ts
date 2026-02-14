@@ -8,6 +8,7 @@ import type { StepNodeData } from "@/components/canvas/step-node";
 import type { StepStatus } from "@/types";
 import type { Connection } from "@xyflow/react";
 import { layoutGoalSteps } from "@/lib/dagre-layout";
+import { DEPENDENCY_MARKER_END } from "@/components/canvas/dependency-edge";
 
 interface CanvasState {
   nodes: Node[];
@@ -272,6 +273,7 @@ export const useCanvasStore = create<CanvasState>()(
           source: connection.source,
           target: connection.target,
           type: "dependency",
+          markerEnd: DEPENDENCY_MARKER_END,
         };
         const edges = [...state.edges, edge];
         return { nodes: syncAll(state.nodes, edges), edges };

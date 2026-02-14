@@ -67,6 +67,7 @@ function StepNodeComponent({ id, data, selected }: NodeProps<StepNode>) {
         rounded-lg border bg-card px-3 py-2 shadow-sm min-w-[160px] max-w-[240px] transition-all duration-200
         ${selected ? "border-primary ring-2 ring-primary/20" : borderClass}
       `}
+      onDoubleClick={(e) => e.stopPropagation()}
     >
       <div className="flex items-center gap-2">
         <button

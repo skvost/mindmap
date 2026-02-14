@@ -65,6 +65,7 @@ function GoalNodeComponent({ id, data, selected }: NodeProps<GoalNode>) {
         rounded-xl border-2 bg-card px-4 py-3 shadow-md min-w-[200px] max-w-[300px] transition-shadow duration-300
         ${isComplete ? "border-green-500 shadow-green-500/25 shadow-lg" : selected ? "border-primary ring-2 ring-primary/20" : "border-border"}
       `}
+      onDoubleClick={(e) => e.stopPropagation()}
     >
       <div className="flex items-start gap-2">
         {hasSteps && (

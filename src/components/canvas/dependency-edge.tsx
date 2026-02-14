@@ -4,10 +4,18 @@ import {
   BaseEdge,
   EdgeLabelRenderer,
   getBezierPath,
+  MarkerType,
   type EdgeProps,
 } from "@xyflow/react";
 import { X } from "lucide-react";
 import { useCanvasStore } from "@/store/canvas-store";
+
+export const DEPENDENCY_MARKER_END = {
+  type: MarkerType.ArrowClosed,
+  width: 16,
+  height: 16,
+  color: "var(--color-muted-foreground)",
+};
 
 export function DependencyEdge({
   id,
@@ -18,6 +26,7 @@ export function DependencyEdge({
   sourcePosition,
   targetPosition,
   selected,
+  markerEnd,
 }: EdgeProps) {
   const deleteEdge = useCanvasStore((s) => s.deleteEdge);
 
@@ -36,10 +45,12 @@ export function DependencyEdge({
         id={id}
         path={edgePath}
         style={{
-          stroke: selected ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))",
-          strokeWidth: selected ? 2 : 1.5,
+          stroke: selected
+            ? "var(--color-primary)"
+            : "var(--color-muted-foreground)",
+          strokeWidth: selected ? 2.5 : 2,
         }}
-        markerEnd="url(#dependency-arrow)"
+        markerEnd={markerEnd}
       />
       {selected && (
         <EdgeLabelRenderer>
