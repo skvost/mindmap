@@ -14,9 +14,11 @@ import {
   applyEdgeChanges,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 
 import { useCanvasStore } from "@/store/canvas-store";
+import type { GoalNodeData } from "./goal-node";
+import type { StepNodeData } from "./step-node";
 import { nodeTypes } from "./node-types";
 import { edgeTypes } from "./edge-types";
 import { EmptyState } from "./empty-state";
@@ -29,6 +31,43 @@ export function Canvas() {
   const addGoal = useCanvasStore((s) => s.addGoal);
   const setSelectedNodeId = useCanvasStore((s) => s.setSelectedNodeId);
   const { screenToFlowPosition } = useReactFlow();
+
+  // Collapse: hide step nodes whose parent goal is collapsed
+  const collapsedGoalIds = useMemo(() => {
+    const ids = new Set<string>();
+    for (const n of nodes) {
+      if (n.type === "goal" && (n.data as GoalNodeData).isCollapsed) {
+        ids.add(n.id);
+      }
+    }
+    return ids;
+  }, [nodes]);
+
+  const visibleNodes = useMemo(() => {
+    if (collapsedGoalIds.size === 0) return nodes;
+    return nodes.filter((n) => {
+      if (n.type !== "step") return true;
+      return !collapsedGoalIds.has((n.data as StepNodeData).goalId);
+    });
+  }, [nodes, collapsedGoalIds]);
+
+  const hiddenStepIds = useMemo(() => {
+    if (collapsedGoalIds.size === 0) return new Set<string>();
+    const ids = new Set<string>();
+    for (const n of nodes) {
+      if (n.type === "step" && collapsedGoalIds.has((n.data as StepNodeData).goalId)) {
+        ids.add(n.id);
+      }
+    }
+    return ids;
+  }, [nodes, collapsedGoalIds]);
+
+  const visibleEdges = useMemo(() => {
+    if (hiddenStepIds.size === 0) return edges;
+    return edges.filter(
+      (e) => !hiddenStepIds.has(e.source) && !hiddenStepIds.has(e.target),
+    );
+  }, [edges, hiddenStepIds]);
 
   const onNodesChange: OnNodesChange = useCallback(
     (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
@@ -61,8 +100,8 @@ export function Canvas() {
 
   return (
     <ReactFlow
-      nodes={nodes}
-      edges={edges}
+      nodes={visibleNodes}
+      edges={visibleEdges}
       onNodesChange={onNodesChange}
       onEdgesChange={onEdgesChange}
       onDoubleClick={onDoubleClickCanvas}

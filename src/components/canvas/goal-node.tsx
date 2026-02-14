@@ -2,7 +2,7 @@
 
 import { memo, useState, useRef, useEffect, useCallback } from "react";
 import { Handle, Position, type NodeProps, type Node } from "@xyflow/react";
-import { ChevronDown, ChevronRight, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronRight, Plus, Trash2 } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -33,6 +33,7 @@ function GoalNodeComponent({ id, data, selected }: NodeProps<GoalNode>) {
   const updateGoalTitle = useCanvasStore((s) => s.updateGoalTitle);
   const deleteGoal = useCanvasStore((s) => s.deleteGoal);
   const toggleGoalCollapsed = useCanvasStore((s) => s.toggleGoalCollapsed);
+  const addStep = useCanvasStore((s) => s.addStep);
 
   useEffect(() => {
     if (isEditing) {
@@ -105,6 +106,14 @@ function GoalNodeComponent({ id, data, selected }: NodeProps<GoalNode>) {
             </p>
           )}
         </div>
+
+        <button
+          className="mt-0.5 p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground"
+          onClick={() => addStep(id)}
+          title="Add step"
+        >
+          <Plus className="h-3.5 w-3.5" />
+        </button>
 
         <AlertDialog>
           <AlertDialogTrigger asChild>
