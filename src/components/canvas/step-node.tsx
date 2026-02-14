@@ -16,12 +16,12 @@ type StepNode = Node<StepNodeData, "step">;
 
 const statusConfig: Record<
   StepStatus,
-  { icon: typeof Circle; className: string; label: string }
+  { icon: typeof Circle; className: string; borderClass: string; label: string }
 > = {
-  locked: { icon: Lock, className: "text-muted-foreground/50", label: "Locked" },
-  available: { icon: Circle, className: "text-blue-500", label: "Available" },
-  in_progress: { icon: Loader2, className: "text-amber-500", label: "In progress" },
-  completed: { icon: CheckCircle2, className: "text-green-500", label: "Completed" },
+  locked: { icon: Lock, className: "text-muted-foreground/50", borderClass: "border-muted opacity-60", label: "Locked" },
+  available: { icon: Circle, className: "text-blue-500", borderClass: "border-blue-500/40", label: "Available" },
+  in_progress: { icon: Loader2, className: "text-amber-500", borderClass: "border-amber-500/40", label: "In progress" },
+  completed: { icon: CheckCircle2, className: "text-green-500", borderClass: "border-green-500/40", label: "Completed" },
 };
 
 const statusCycle: StepStatus[] = ["available", "in_progress", "completed"];
@@ -58,14 +58,14 @@ function StepNodeComponent({ id, data, selected }: NodeProps<StepNode>) {
     updateStepStatus(id, next);
   }, [id, data.status, updateStepStatus]);
 
-  const { icon: StatusIcon, className: statusClass, label: statusLabel } =
+  const { icon: StatusIcon, className: statusClass, borderClass, label: statusLabel } =
     statusConfig[data.status];
 
   return (
     <div
       className={`
-        rounded-lg border bg-card px-3 py-2 shadow-sm min-w-[160px] max-w-[240px]
-        ${selected ? "border-primary ring-2 ring-primary/20" : "border-border"}
+        rounded-lg border bg-card px-3 py-2 shadow-sm min-w-[160px] max-w-[240px] transition-all duration-200
+        ${selected ? "border-primary ring-2 ring-primary/20" : borderClass}
       `}
     >
       <div className="flex items-center gap-2">

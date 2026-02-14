@@ -2,7 +2,7 @@
 
 import { memo, useState, useRef, useEffect, useCallback } from "react";
 import { Handle, Position, type NodeProps, type Node } from "@xyflow/react";
-import { ChevronDown, ChevronRight, Plus, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronRight, LayoutGrid, Plus, Trash2 } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,6 +34,7 @@ function GoalNodeComponent({ id, data, selected }: NodeProps<GoalNode>) {
   const deleteGoal = useCanvasStore((s) => s.deleteGoal);
   const toggleGoalCollapsed = useCanvasStore((s) => s.toggleGoalCollapsed);
   const addStep = useCanvasStore((s) => s.addStep);
+  const layoutGoal = useCanvasStore((s) => s.layoutGoal);
 
   useEffect(() => {
     if (isEditing) {
@@ -53,12 +54,16 @@ function GoalNodeComponent({ id, data, selected }: NodeProps<GoalNode>) {
   }, [editValue, data.title, id, updateGoalTitle]);
 
   const hasSteps = data.stepCount > 0;
+  const isComplete = hasSteps && data.completedStepCount === data.stepCount;
+  const progressPct = hasSteps
+    ? Math.round((data.completedStepCount / data.stepCount) * 100)
+    : 0;
 
   return (
     <div
       className={`
-        rounded-xl border-2 bg-card px-4 py-3 shadow-md min-w-[200px] max-w-[300px]
-        ${selected ? "border-primary ring-2 ring-primary/20" : "border-border"}
+        rounded-xl border-2 bg-card px-4 py-3 shadow-md min-w-[200px] max-w-[300px] transition-shadow duration-300
+        ${isComplete ? "border-green-500 shadow-green-500/25 shadow-lg" : selected ? "border-primary ring-2 ring-primary/20" : "border-border"}
       `}
     >
       <div className="flex items-start gap-2">
@@ -101,9 +106,17 @@ function GoalNodeComponent({ id, data, selected }: NodeProps<GoalNode>) {
           )}
 
           {hasSteps && (
-            <p className="text-xs text-muted-foreground mt-1">
-              {data.completedStepCount}/{data.stepCount} steps done
-            </p>
+            <div className="mt-1.5 flex items-center gap-2">
+              <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all duration-300 ${isComplete ? "bg-green-500" : "bg-primary"}`}
+                  style={{ width: `${progressPct}%` }}
+                />
+              </div>
+              <span className="text-xs text-muted-foreground whitespace-nowrap">
+                {data.completedStepCount}/{data.stepCount}
+              </span>
+            </div>
           )}
         </div>
 
@@ -114,6 +127,16 @@ function GoalNodeComponent({ id, data, selected }: NodeProps<GoalNode>) {
         >
           <Plus className="h-3.5 w-3.5" />
         </button>
+
+        {hasSteps && (
+          <button
+            className="mt-0.5 p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground"
+            onClick={() => layoutGoal(id)}
+            title="Tidy up steps"
+          >
+            <LayoutGrid className="h-3.5 w-3.5" />
+          </button>
+        )}
 
         <AlertDialog>
           <AlertDialogTrigger asChild>

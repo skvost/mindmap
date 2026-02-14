@@ -7,6 +7,7 @@ import type { GoalNodeData } from "@/components/canvas/goal-node";
 import type { StepNodeData } from "@/components/canvas/step-node";
 import type { StepStatus } from "@/types";
 import type { Connection } from "@xyflow/react";
+import { layoutGoalSteps } from "@/lib/dagre-layout";
 
 interface CanvasState {
   nodes: Node[];
@@ -30,6 +31,8 @@ interface CanvasState {
   addDependencyEdge: (connection: Connection) => void;
   deleteEdge: (id: string) => void;
   isValidConnection: (connection: Connection) => boolean;
+
+  layoutGoal: (goalId: string) => void;
 }
 
 let counter = 0;
@@ -322,5 +325,25 @@ export const useCanvasStore = create<CanvasState>()(
 
       return true;
     },
+
+    layoutGoal: (goalId) =>
+      set((state) => {
+        const goal = state.nodes.find((n) => n.id === goalId);
+        if (!goal) return state;
+
+        const stepNodes = state.nodes.filter(
+          (n) =>
+            n.type === "step" &&
+            (n.data as StepNodeData).goalId === goalId,
+        );
+        if (stepNodes.length === 0) return state;
+
+        const laid = layoutGoalSteps(goal, stepNodes, state.edges);
+        const laidMap = new Map(laid.map((n) => [n.id, n]));
+
+        return {
+          nodes: state.nodes.map((n) => laidMap.get(n.id) ?? n),
+        };
+      }),
   })),
 );
