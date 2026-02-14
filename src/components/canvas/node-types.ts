@@ -1,8 +1,7 @@
 import type { NodeTypes } from "@xyflow/react";
+import { GoalNode } from "./goal-node";
 
-// Custom node types registered here. Components added as they're built.
-// Keys must match the `type` field on nodes.
 export const nodeTypes: NodeTypes = {
-  // goal: GoalNode,   — mindmap-6up
+  goal: GoalNode,
   // step: StepNode,   — future issue
 };

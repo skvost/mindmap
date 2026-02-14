@@ -7,6 +7,7 @@ import {
   Controls,
   MiniMap,
   useOnSelectionChange,
+  useReactFlow,
   type OnNodesChange,
   type OnEdgesChange,
   applyNodeChanges,
@@ -25,7 +26,9 @@ export function Canvas() {
   const edges = useCanvasStore((s) => s.edges);
   const setNodes = useCanvasStore((s) => s.setNodes);
   const setEdges = useCanvasStore((s) => s.setEdges);
+  const addGoal = useCanvasStore((s) => s.addGoal);
   const setSelectedNodeId = useCanvasStore((s) => s.setSelectedNodeId);
+  const { screenToFlowPosition } = useReactFlow();
 
   const onNodesChange: OnNodesChange = useCallback(
     (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
@@ -43,6 +46,17 @@ export function Canvas() {
     },
   });
 
+  const onDoubleClickCanvas = useCallback(
+    (event: React.MouseEvent) => {
+      const position = screenToFlowPosition({
+        x: event.clientX,
+        y: event.clientY,
+      });
+      addGoal(position);
+    },
+    [screenToFlowPosition, addGoal],
+  );
+
   const isEmpty = nodes.length === 0;
 
   return (
@@ -51,6 +65,7 @@ export function Canvas() {
       edges={edges}
       onNodesChange={onNodesChange}
       onEdgesChange={onEdgesChange}
+      onDoubleClick={onDoubleClickCanvas}
       nodeTypes={nodeTypes}
       edgeTypes={edgeTypes}
       fitView
