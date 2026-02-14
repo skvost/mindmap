@@ -5,6 +5,7 @@ import type { Node, Edge } from "@xyflow/react";
 import type { GoalNodeData } from "@/components/canvas/goal-node";
 import type { StepNodeData } from "@/components/canvas/step-node";
 import type { StepStatus } from "@/types";
+import type { Connection } from "@xyflow/react";
 
 interface CanvasState {
   nodes: Node[];
@@ -24,6 +25,10 @@ interface CanvasState {
   updateStepTitle: (id: string, title: string) => void;
   updateStepStatus: (id: string, status: StepStatus) => void;
   deleteStep: (id: string) => void;
+
+  addDependencyEdge: (connection: Connection) => void;
+  deleteEdge: (id: string) => void;
+  isValidConnection: (connection: Connection) => boolean;
 }
 
 let counter = 0;
@@ -185,4 +190,64 @@ export const useCanvasStore = create<CanvasState>((set) => ({
       );
       return { nodes, edges };
     }),
+
+  addDependencyEdge: (connection) => {
+    if (!connection.source || !connection.target) return;
+    set((state) => {
+      const duplicate = state.edges.some(
+        (e) => e.source === connection.source && e.target === connection.target,
+      );
+      if (duplicate) return state;
+
+      const edge: Edge = {
+        id: uid("edge"),
+        source: connection.source,
+        target: connection.target,
+        type: "dependency",
+      };
+      return { edges: [...state.edges, edge] };
+    });
+  },
+
+  deleteEdge: (id) =>
+    set((state) => ({
+      edges: state.edges.filter((e) => e.id !== id),
+    })),
+
+  isValidConnection: (connection) => {
+    const state = useCanvasStore.getState();
+    if (!connection.source || !connection.target) return false;
+    if (connection.source === connection.target) return false;
+
+    const sourceNode = state.nodes.find((n) => n.id === connection.source);
+    const targetNode = state.nodes.find((n) => n.id === connection.target);
+    if (!sourceNode || !targetNode) return false;
+    if (sourceNode.type !== "step" || targetNode.type !== "step") return false;
+
+    // Must belong to the same goal
+    const sourceGoalId = (sourceNode.data as StepNodeData).goalId;
+    const targetGoalId = (targetNode.data as StepNodeData).goalId;
+    if (sourceGoalId !== targetGoalId) return false;
+
+    // Prevent duplicate edges
+    const duplicate = state.edges.some(
+      (e) => e.source === connection.source && e.target === connection.target,
+    );
+    if (duplicate) return false;
+
+    // Prevent cycles: check if target can already reach source
+    const visited = new Set<string>();
+    const queue = [connection.target];
+    while (queue.length > 0) {
+      const current = queue.pop()!;
+      if (current === connection.source) return false;
+      if (visited.has(current)) continue;
+      visited.add(current);
+      for (const e of state.edges) {
+        if (e.source === current) queue.push(e.target);
+      }
+    }
+
+    return true;
+  },
 }));

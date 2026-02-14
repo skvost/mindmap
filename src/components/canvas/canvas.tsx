@@ -10,6 +10,8 @@ import {
   useReactFlow,
   type OnNodesChange,
   type OnEdgesChange,
+  type OnConnect,
+  type IsValidConnection,
   applyNodeChanges,
   applyEdgeChanges,
 } from "@xyflow/react";
@@ -29,6 +31,8 @@ export function Canvas() {
   const setNodes = useCanvasStore((s) => s.setNodes);
   const setEdges = useCanvasStore((s) => s.setEdges);
   const addGoal = useCanvasStore((s) => s.addGoal);
+  const addDependencyEdge = useCanvasStore((s) => s.addDependencyEdge);
+  const isValidConnection = useCanvasStore((s) => s.isValidConnection);
   const setSelectedNodeId = useCanvasStore((s) => s.setSelectedNodeId);
   const { screenToFlowPosition } = useReactFlow();
 
@@ -79,6 +83,19 @@ export function Canvas() {
     [setEdges],
   );
 
+  const onConnect: OnConnect = useCallback(
+    (connection) => addDependencyEdge(connection),
+    [addDependencyEdge],
+  );
+
+  const checkValidConnection: IsValidConnection = useCallback(
+    (connection) => {
+      if (!("source" in connection) || !("target" in connection)) return false;
+      return isValidConnection(connection as { source: string; target: string; sourceHandle: string | null; targetHandle: string | null });
+    },
+    [isValidConnection],
+  );
+
   useOnSelectionChange({
     onChange: ({ nodes: selected }) => {
       setSelectedNodeId(selected.length === 1 ? selected[0].id : null);
@@ -104,6 +121,8 @@ export function Canvas() {
       edges={visibleEdges}
       onNodesChange={onNodesChange}
       onEdgesChange={onEdgesChange}
+      onConnect={onConnect}
+      isValidConnection={checkValidConnection}
       onDoubleClick={onDoubleClickCanvas}
       nodeTypes={nodeTypes}
       edgeTypes={edgeTypes}
@@ -113,6 +132,24 @@ export function Canvas() {
       proOptions={{ hideAttribution: true }}
       selectNodesOnDrag={false}
     >
+      <svg>
+        <defs>
+          <marker
+            id="dependency-arrow"
+            viewBox="0 0 10 10"
+            refX="10"
+            refY="5"
+            markerWidth="6"
+            markerHeight="6"
+            orient="auto-start-reverse"
+          >
+            <path
+              d="M 0 0 L 10 5 L 0 10 z"
+              fill="hsl(var(--muted-foreground))"
+            />
+          </marker>
+        </defs>
+      </svg>
       <Background variant={BackgroundVariant.Dots} gap={20} size={1} />
       <Controls showInteractive={false} />
       <MiniMap
