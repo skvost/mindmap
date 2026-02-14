@@ -24,8 +24,10 @@ import type { StepNodeData } from "./step-node";
 import { nodeTypes } from "./node-types";
 import { edgeTypes } from "./edge-types";
 import { EmptyState } from "./empty-state";
+import { usePersistence } from "@/hooks/use-persistence";
 
 export function Canvas() {
+  usePersistence();
   const nodes = useCanvasStore((s) => s.nodes);
   const edges = useCanvasStore((s) => s.edges);
   const setNodes = useCanvasStore((s) => s.setNodes);
