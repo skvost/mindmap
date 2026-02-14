@@ -2,7 +2,7 @@
 
 import { memo, useState, useRef, useEffect, useCallback } from "react";
 import { Handle, Position, type NodeProps, type Node } from "@xyflow/react";
-import { Circle, CheckCircle2, Loader2, Lock, Trash2 } from "lucide-react";
+import { Circle, CheckCircle2, Loader2, Lock, Plus, Trash2 } from "lucide-react";
 import { useCanvasStore } from "@/store/canvas-store";
 import type { StepStatus } from "@/types";
 
@@ -32,6 +32,7 @@ function StepNodeComponent({ id, data, selected }: NodeProps<StepNode>) {
   const inputRef = useRef<HTMLInputElement>(null);
   const updateStepTitle = useCanvasStore((s) => s.updateStepTitle);
   const updateStepStatus = useCanvasStore((s) => s.updateStepStatus);
+  const addChildStep = useCanvasStore((s) => s.addChildStep);
   const deleteStep = useCanvasStore((s) => s.deleteStep);
 
   useEffect(() => {
@@ -103,6 +104,14 @@ function StepNodeComponent({ id, data, selected }: NodeProps<StepNode>) {
             </span>
           )}
         </div>
+
+        <button
+          className="shrink-0 p-0.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground"
+          onClick={() => addChildStep(id)}
+          title="Add next step"
+        >
+          <Plus className="h-3 w-3" />
+        </button>
 
         <button
           className="shrink-0 p-0.5 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive"

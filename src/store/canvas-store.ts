@@ -25,6 +25,7 @@ interface CanvasState {
   toggleGoalCollapsed: (id: string) => void;
 
   addStep: (goalId: string) => void;
+  addChildStep: (parentStepId: string) => void;
   updateStepTitle: (id: string, title: string) => void;
   updateStepStatus: (id: string, status: StepStatus) => void;
   deleteStep: (id: string) => void;
@@ -232,6 +233,40 @@ export const useCanvasStore = create<CanvasState>()(
         };
 
         return { nodes: syncAll([...state.nodes, newStep], state.edges) };
+      }),
+
+    addChildStep: (parentStepId) =>
+      set((state) => {
+        const parent = state.nodes.find((n) => n.id === parentStepId);
+        if (!parent || parent.type !== "step") return state;
+        const parentData = parent.data as StepNodeData;
+
+        const childId = uid("step");
+        const childStep: Node<StepNodeData> = {
+          id: childId,
+          type: "step",
+          position: {
+            x: parent.position.x,
+            y: parent.position.y - 70,
+          },
+          data: {
+            title: "New Step",
+            goalId: parentData.goalId,
+            status: "locked",
+          },
+        };
+
+        const edge: Edge = {
+          id: uid("edge"),
+          source: parentStepId,
+          target: childId,
+          type: "dependency",
+          markerEnd: DEPENDENCY_MARKER_END,
+        };
+
+        const edges = [...state.edges, edge];
+        const nodes = syncAll([...state.nodes, childStep], edges);
+        return { nodes, edges };
       }),
 
     updateStepTitle: (id, title) =>
