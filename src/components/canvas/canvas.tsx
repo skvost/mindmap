@@ -132,6 +132,7 @@ export function Canvas() {
       minZoom={0.1}
       maxZoom={2}
       proOptions={{ hideAttribution: true }}
+      zoomOnDoubleClick={false}
       selectNodesOnDrag={false}
     >
       <svg>
